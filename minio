@@ -1,0 +1,39 @@
+version : "3.9"
+
+services:
+  minio:
+    image: minio/minio:RELEASE.2024-12-18T13-15-44Z.fips
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD_FILE: /run/secrets/minio_pass
+    secrets:
+      - minio_pass
+    volumes:
+      - /mnt/data/minio:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    command: server /data --console-address ":9001"
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == ch-st-n3
+      restart_policy:
+        condition: any
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+    networks:
+      - chabok
+
+
+secrets:
+  minio_pass:
+    external: true
+
+networks:
+  chabok:
+    name: chabok
+    external: true
