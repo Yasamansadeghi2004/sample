@@ -1,0 +1,20 @@
+services:
+  nginx:
+    image: nginx:1.28.0
+    container_name: nginx
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      - mattermost
+    ports:
+      - "80:80"
+    volumes:
+      - nginx_config:/etc/nginx/nginx.conf:ro
+    networks:
+      - chat
+
+volumes:
+  nginx_config:
+
+networks:
+  chat:
