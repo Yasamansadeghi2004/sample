@@ -1,0 +1,50 @@
+version: "3.9"
+services:
+  chabok-pay:
+    hostname: chabok_pay
+    image: docker.mtyn.ir/chabok-pardakht/mono:v.stage
+    entrypoint: ["sh", "-c", "java $JAVA_OPTS -jar /app/Chabok.jar"]
+    environment:
+      - TZ=Asia/Tehran
+      - JAVA_OPTS=-Xms512m -Xmx1G
+      - DB_HOST=postrgres   
+      - DB_PORT=5432
+      - DB_NAME=chabok_db
+      - DB_USER=chabok
+      - DB_PASSWORD_FILE=/run/secrets/postgres_pass
+      - ELASTICSEARCH_HOST=elasticsearch
+      - ELASTICSEARCH_PORT=9200
+
+    secrets:
+      - postgres_pass
+    volumes:
+      - backend_data:/app/data
+    ports:
+      - 8080:8080
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2g
+      replicas: 3
+      restart_policy:
+        condition: any
+    networks:
+      - chabok
+
+secrets:
+  postgres_pass:
+    external: true
+    
+volumes:
+  backend_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /mnt/gv0/backend
+      o: bind
+
+networks:
+  chabok:
+    name: chabok
+    external: true
