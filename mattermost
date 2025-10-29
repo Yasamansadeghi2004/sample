@@ -1,0 +1,35 @@
+services:
+  mattermost:
+    image: mattermost/mattermost-team-edition:release-10.5
+    container_name: mattermost
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      - TZ=UTC
+      - MM_SQLSETTINGS_DRIVERNAME=postgres
+      - MM_SQLSETTINGS_DATASOURCE=postgres://${MM_USERNAME}:${MM_PASSWORD}@postgres:5432/${MM_DBNAME}?sslmode=disable&connect_timeout=10
+      - MM_BLEVESETTINGS_INDEXPATH=/mattermost/data/bleve-index
+      - MM_SERVICESETTINGS_SITEURL=http://localhost:8065
+    ports:
+      - "8065:8065"
+    volumes:
+      - mattermost_data:/mattermost/data
+      - mattermost_logs:/mattermost/logs
+      - mattermost_config:/mattermost/config
+      - mattermost_plugins:/mattermost/plugins
+      - mattermost_client_plugins:/mattermost/client/plugins
+      - mattermost_bleve_index:/mattermost/data/bleve-index
+    tmpfs:
+      - /tmp
+    logging:
+      driver: json-file
+      options:
+        max-size: "200m"
+        max-file: "1"
+    pids_limit: 512
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
+    networks:
+      - chat
